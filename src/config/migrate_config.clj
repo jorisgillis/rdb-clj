@@ -5,10 +5,14 @@
 (defqueries "sql/migration.sql")
 
 (defn current-db-version []
-  (select-current-version {} (db/use-connection)))
+  (or (-> 
+       (select-current-version {} (db/use-connection))
+       first
+       :version) 
+      0))
 
 (defn update-db-version [new-version]
-  (update-current-version {:new-version new-version} (db/use-connection)))
+  (update-current-version {:next new-version} (db/use-connection)))
 
 (defn migrate-config []
   {:directory "db/migrations"

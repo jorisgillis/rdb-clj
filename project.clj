@@ -1,8 +1,8 @@
 (defproject rdb "0.1.0-SNAPSHOT"
   :description "Recipes database"
   :url "http://example.com/FIXME"
-  :license {:name "Eclipse Public License"
-            :url "http://www.eclipse.org/legal/epl-v10.html"}
+  :license {:name "GNU GPL v3"
+            :url "http://gplv3.fsf.org/"}
   :dev-dependencies [[drift "1.5.3"]]
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [compojure "1.5.0"]
