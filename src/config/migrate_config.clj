@@ -12,9 +12,9 @@
       0))
 
 (defn update-db-version [new-version]
-  (update-current-version {:next new-version} (db/use-connection)))
+  (update-current-version! {:next new-version} (db/use-connection)))
 
 (defn migrate-config []
-  {:directory "/db/migrations"
+  {:directory "/src/db/migrations"
    :current-version current-db-version
    :update-version update-db-version})
