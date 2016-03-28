@@ -7,5 +7,11 @@ SELECT id, name, description
   FROM recipe
  WHERE id = :id
 
---name: create-recipe!
+--name: create-recipe<!
 INSERT INTO recipe (name, description) VALUES (:name, :description)
+
+--name: update-recipe<!
+UPDATE recipe 
+   SET name = :name, 
+       description = :description
+ WHERE id = :id

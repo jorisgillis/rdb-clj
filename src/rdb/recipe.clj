@@ -1,32 +1,20 @@
 (ns rdb.recipe
   (:require [rdb.util.db :refer [use-connection]]
-            [yesql.core :refer [defqueries]]
-            [schema.core :as s]))
+            [yesql.core :refer [defqueries]]))
 
 (defqueries "sql/recipe.sql")
 
-(s/defrecord Recipe 
-    [id :- s/Int 
-     name :- s/Str 
-     description :- s/Str])
-
-(s/defrecord RecipeCreate 
-    [name :- s/Str
-     description :- s/Str])
-
-(s/defn get-all-recipes :- [Recipe] 
-  []
+(defn get-all-recipes []
   (->>
-   (select-recipes {} (use-connection))
-   (mapv map->Recipe)))
+   (select-recipes {} (use-connection))))
 
-(s/defn get-recipe :- Recipe 
-  [recipe-id :- s/Int]
-  (let [recipe (->
-                (select-recipe-by-id {:id recipe-id} (use-connection))
-                first)]
-    (when-not (nil? recipe) (map->Recipe recipe))))
+(defn get-recipe [recipe-id]
+  (->
+   (select-recipe-by-id {:id recipe-id} (use-connection))
+   first))
 
-(s/defn create-new-recipe 
-  [recipe :- RecipeCreate]
-  (create-recipe! recipe (use-connection)))
+(defn create-new-recipe [recipe]
+  (create-recipe<! recipe (use-connection)))
+
+(defn update-recipe [recipe]
+  (update-recipe<! recipe (use-connection)))
