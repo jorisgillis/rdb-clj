@@ -2,11 +2,14 @@ pom.xml
 pom.xml.asc
 *jar
 /lib/
-/classes/
-/target/
+backend/classes/
+backend/target/
 /checkouts/
 .lein-deps-sum
 .lein-repl-history
 .lein-plugins/
 .lein-failures
 .nrepl-port
+**/*~
+frontend/index.html
+frontend/elm-stuff
