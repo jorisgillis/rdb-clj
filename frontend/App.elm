@@ -1,32 +1,46 @@
 module App exposing (..)
 
-import Basics exposing (multiply, subtract, divide)
 import Html exposing (Html, div, text)
 import Html.App
 
+import Recipe
+
 -- Model
 type alias Model =
-    String
+    { recipes : List Recipe.Recipe
+    , errors  : List String
+    }
 
 init : (Model, Cmd Msg)
-init = ("Hello", Cmd.none)
+init = (initialModel, Cmd.map RecipeMsg Recipe.fetchAll)
+
+initialModel : Model
+initialModel =
+    { recipes = []
+    , errors  = []
+    }
 
 -- MESSAGES
 type Msg
-    = NoOp
+    = RecipeMsg Recipe.Msg
 
 -- VIEW
 view : Model -> Html Msg
 view model =
-    div []
-        [text model]
+    Html.App.map RecipeMsg (Recipe.view model.recipes model.errors)
 
 -- UPDATE
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
-        NoOp ->
-            (model, Cmd.none)
+        RecipeMsg subMsg ->
+            let (apiRecipes, cmd) =
+                    Recipe.update subMsg model.recipes
+            in
+                case apiRecipes.recipes of
+                    Just recipes -> (Model recipes [], Cmd.map RecipeMsg cmd )
+                    Nothing      -> (Model [] [(Maybe.withDefault "ERROR" apiRecipes.error)],
+                                          Cmd.map RecipeMsg cmd)
 
 -- SUBSCRIPTIONS
 subscriptions : Model -> Sub Msg
@@ -42,4 +56,4 @@ main =
         , update = update
         , subscriptions = subscriptions
         }
-        
+

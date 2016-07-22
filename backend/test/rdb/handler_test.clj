@@ -11,7 +11,7 @@
         (let [resp             (delay (peridot/request (peridot/session app) "/recipe"))
               recipe1          {:id 1 :name "recipe1" :description nil}
               recipe2          {:id 2 :name "recipe2" :description "Description"}
-              expectedResponse (write-str {:recipes [recipe1 recipe2]})]
+              expectedResponse (write-str [recipe1 recipe2])]
           (:status (:response @resp)) => 200
           (provided
            (db/use-connection) => :connected

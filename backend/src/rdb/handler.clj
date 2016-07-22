@@ -22,7 +22,7 @@
 
   (context "/recipe" []
            (GET "/" []
-                (response {:recipes (r/get-all-recipes)}))
+                (response (r/get-all-recipes)))
 
            (GET "/:id" [id]
                 (let [recipe (r/get-recipe id)]
