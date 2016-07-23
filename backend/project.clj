@@ -7,6 +7,7 @@
                  [compojure "1.5.0"]
                  [ring "1.4.0"]
                  [ring/ring-json "0.4.0"]
+                 [jumblerg/ring.middleware.cors "1.0.1"]
                  [yesql "0.5.2"]
                  [org.clojure/java.jdbc "0.4.2"]
                  [org.xerial/sqlite-jdbc "3.7.2"]

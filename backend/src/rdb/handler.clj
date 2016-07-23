@@ -3,12 +3,14 @@
   (:use compojure.core)
   (:require [rdb.recipe :as r]
             [ring.middleware.json :refer [wrap-json-response wrap-json-body]]
-            [ring.util.response :refer [response not-found]]
+            [ring.util.response :refer [response not-found header]]
             [ring.middleware.params :refer [wrap-params]]
             [ring.middleware.keyword-params :refer [wrap-keyword-params]]
+            [ring.middleware.cors :refer [wrap-cors]]
             [compojure.route :as route]
             [compojure.handler :as handler]
-            [clojure.walk :as walk]))
+            [clojure.walk :as walk]
+            [clojure.data.json :refer [write-str]]))
 
 (defn- parse-request-body [request]
   (->
@@ -17,12 +19,11 @@
    walk/keywordize-keys))
 
 (defroutes main-routes
-  (GET "/" []
-       (response (apply str "Powered by Clojure & Ring")))
-
   (context "/recipe" []
            (GET "/" []
-                (response (r/get-all-recipes)))
+                (->
+                 (response {:recipes (r/get-all-recipes)})
+                 ((fn [x] (println x) x))))
 
            (GET "/:id" [id]
                 (let [recipe (r/get-recipe id)]
@@ -47,7 +48,8 @@
   (->
    main-routes
    handler/api
-   wrap-json-response
    wrap-json-body
    wrap-params
-   wrap-keyword-params))
+   wrap-keyword-params
+   wrap-json-response
+   (wrap-cors identity)))

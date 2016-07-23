@@ -4,6 +4,7 @@ pom.xml.asc
 /lib/
 backend/classes/
 backend/target/
+backend/database.db
 /checkouts/
 .lein-deps-sum
 .lein-repl-history
@@ -11,5 +12,6 @@ backend/target/
 .lein-failures
 .nrepl-port
 **/*~
-frontend/index.html
 frontend/elm-stuff
+frontend/App.js
+.hgignore
