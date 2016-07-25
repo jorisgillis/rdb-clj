@@ -4,7 +4,7 @@ import Http
 import Json.Decode as Decode exposing ((:=))
 import Task
 import Html exposing (..)
-import Bootstrap.Html exposing (row_, colXs_, container_)
+import Html.Attributes exposing (class, id)
 
 -- MESSAGES
 type Msg
@@ -33,8 +33,8 @@ initialModel = Model [] (Nothing)
 view : Model -> Html Msg
 view model =
     div []
-        [ (row_ [(colXs_ 12 [(showError model.error)])])
-        , (row_ [(colXs_ 12 [(showRecipes model.recipes)])])
+        [ (showError model.error)
+        , (showRecipes model.recipes)
         ]
 
 showError : Maybe String -> Html Msg
@@ -45,28 +45,16 @@ showError x =
 
 showRecipes : List Recipe -> Html Msg
 showRecipes recipes =
-    div []
-        [ h1 [] [ text "Recipes" ]
-        , div []
-            [table []
-                 [thead []
-                      [tr []
-                           [ th [] [ text "ID" ]
-                           , th [] [ text "Name" ]
-                           , th [] [ text "Description" ]
-                           ]
-                      ]
-                 , tbody [] (List.map recipeRow recipes)
-                 ]
-            ]
-        ]
+    div [ class "grid" ] (List.map recipeRow recipes)
 
 recipeRow : Recipe -> Html Msg
 recipeRow recipe =
-    tr []
-        [ td [] [ text (toString recipe.id) ]
-        , td [] [ text recipe.name ]
-        , td [] [ text recipe.description ]
+    div [ class "grid-item" ]
+        [ div [ class "panel panel-default" ]
+              [ div [ class "panel-heading" ]
+                    [ p [ class "panel-title" ] [ text recipe.name ] ]
+              , div [ class "panel-body" ] [ text recipe.description ]
+              ]
         ]
 
 -- UPDATE

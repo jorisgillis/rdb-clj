@@ -3,7 +3,6 @@ module App exposing (..)
 import Html exposing (Html, div, text, ul, li, p)
 import Html.App
 import Html.Attributes exposing (class)
-import Bootstrap.Html as Bootstrap exposing (container_, navbar', navbarHeader_)
 
 import Recipe
 
@@ -25,12 +24,17 @@ type Msg
 view : Model -> Html Msg
 view model =
     div []
-        [ navbar' "navbar navbar-inverse navbar-fixed-top"
-              [ container_
-                    [ navbarHeader_
-                          [ p [class "navbar-brand"] [ text "RecipeDB" ] ] ]
-              ]
-        , container_ [(Html.App.map RecipeMsg (Recipe.view model.recipes))]
+        [ showNavigation
+        , div [ ]
+              [ (Html.App.map RecipeMsg (Recipe.view model.recipes)) ]
+        ]
+
+showNavigation : Html Msg
+showNavigation =
+    div [ class "navbar navbar-default" ]
+        [ div [class "container"]
+              [ div [ class "navbarheader" ]
+                    [ p [class "navbar-brand"] [ text "RecipeDB" ] ] ]
         ]
 
 -- UPDATE
