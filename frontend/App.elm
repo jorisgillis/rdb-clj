@@ -4,29 +4,36 @@ import Html exposing (Html, div, text, ul, li, p)
 import Html.App
 import Html.Attributes exposing (class)
 
-import Recipe
+import RecipeList
+import RecipeView
 
 -- Model
 type alias Model =
-    { recipes : Recipe.Model }
+    { recipes : RecipeList.Model
+    , recipe : RecipeView.Model
+    }
 
 init : (Model, Cmd Msg)
-init = (initialModel, Cmd.map RecipeMsg Recipe.fetchAll)
+init = (initialModel, Cmd.map RecipeListMsg RecipeList.fetchAll)
 
 initialModel : Model
-initialModel = { recipes = Recipe.initialModel }
+initialModel =
+    { recipes = RecipeList.initialModel
+    , recipe = RecipeView.initialModel
+    }
 
 -- MESSAGES
 type Msg
-    = RecipeMsg Recipe.Msg
+    = RecipeListMsg RecipeList.Msg
+    | RecipeViewMsg RecipeView.Msg
 
 -- VIEW
 view : Model -> Html Msg
 view model =
     div []
         [ showNavigation
-        , div [ ]
-              [ (Html.App.map RecipeMsg (Recipe.view model.recipes)) ]
+        , div [ class "container" ]
+              [ (Html.App.map RecipeListMsg (RecipeList.view model.recipes)) ]
         ]
 
 showNavigation : Html Msg
@@ -34,18 +41,23 @@ showNavigation =
     div [ class "navbar navbar-default" ]
         [ div [class "container"]
               [ div [ class "navbarheader" ]
-                    [ p [class "navbar-brand"] [ text "RecipeDB" ] ] ]
+                    [ p [ class "navbar-brand" ] [ text "RecipeDB" ] ] ]
         ]
 
 -- UPDATE
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
-        RecipeMsg subMsg ->
+        RecipeListMsg subMsg ->
             let (newRecipes, cmd) =
-                    Recipe.update subMsg model.recipes
+                    RecipeList.update subMsg model.recipes
             in
-                ( { model | recipes = newRecipes }, Cmd.map RecipeMsg cmd )
+                ( { model | recipes = newRecipes }, Cmd.map RecipeListMsg cmd )
+        RecipeViewMsg subMsg ->
+            let (newRecipe, cmd) =
+                    RecipeView.update subMsg model.recipe
+            in
+                ( { model | recipe = newRecipe }, Cmd.map RecipeViewMsg cmd )
                 
 -- SUBSCRIPTIONS
 subscriptions : Model -> Sub Msg
