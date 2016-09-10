@@ -6,93 +6,129 @@ import Task
 import Html exposing (..)
 import Html.Attributes exposing (class, id, href)
 import Html.Events exposing (onClick)
-
+import Navigation
 import RecipeModel exposing (RecipeId, Recipe, recipeDecoder)
+import Routing
 import Util exposing (errorToString)
 
 -- MESSAGES
 type Msg
-    = FetchSuccess {recipes : (List Recipe)}
+    = FetchSuccess { recipes : List Recipe }
     | FetchFailure Http.Error
+    | ToRecipe RecipeId
+    | CreateRecipe
 
 -- MODEL
 type alias Model =
     { recipes : List Recipe
-    , error   : Maybe String
+    , error : Maybe String
     }
 
+
 initialModel : Model
-initialModel = Model [] Nothing
+initialModel =
+    Model [] Nothing
+
 
 -- VIEW
 view : Model -> Html Msg
 view model =
     div []
-        [ (showError model.error)
-        , (showCrud)
+        [ showError model.error
+        , showCrud
         , div [ class "row" ] [ showRecipes model.recipes ]
         ]
+
 
 showError : Maybe String -> Html Msg
 showError x =
     case x of
-        Just error -> div [ class "panel panel-danger" ]
-                      [ div [ class "panel-heading" ]
-                            [ p [ class "panel-title" ] [ text "Error" ]
-                            ]
-                      , div [ class "panel-body" ]
-                          [ p [] [ text error ]
-                          , p [] [ i [] [ text "Try again later. " ] ]
-                          ]
-                      ]
-        Nothing    -> div [] []
+        Just error ->
+            div [ class "panel panel-danger" ]
+                [ div [ class "panel-heading" ]
+                    [ p [ class "panel-title" ]
+                        [ text "Error" ]
+                    ]
+                , div [ class "panel-body" ]
+                    [ p [] [ text error ]
+                    , p [] [ i [] [ text "Try again later. " ] ]
+                    ]
+                ]
+
+        Nothing ->
+            div [] []
+
 
 showCrud : Html Msg
-showCrud = div [ class "row crud" ]
-           [ div [ class "col-xs-2" ]
-                 [ button [ href ""
-                          , class "btn btn-sm btn-success"
-                          ]
-                       [ text "Add recipe" ]
-                 ]
-           ]
-        
+showCrud =
+    div [ class "row crud" ]
+        [ div [ class "col-xs-2" ]
+            [ button
+                [ href ""
+                , class "btn btn-sm btn-success"
+                , onClick CreateRecipe
+                ]
+                [ text "Add recipe" ]
+            ]
+        ]
+
+
 showRecipes : List Recipe -> Html Msg
 showRecipes recipes =
     div [ class "grid" ] (List.map recipeRow recipes)
 
+
 recipeRow : Recipe -> Html Msg
 recipeRow recipe =
-    div [ class "grid-item" ]
-        [ div [ class "panel panel-default" ]
-              [ div [ class "panel-heading" ]
-                    [ p [ class "panel-title" ] [ text recipe.name ] ]
-              , div [ class "panel-body" ] [ text recipe.description ]
-              ]
-        ]
+    case recipe.id of
+        Just id ->
+            div [ class "grid-item" ]
+                [ div [ class "panel panel-default" ]
+                    [ div [ class "panel-heading" ]
+                        [ p [ class "panel-title", onClick (ToRecipe id) ]
+                            [ text recipe.name ]
+                        ]
+                    , div [ class "panel-body" ] [ text recipe.description ]
+                    ]
+                ]
+
+        Nothing ->
+            div [] []
+
 
 -- UPDATE
-update : Msg -> Model -> (Model, Cmd Msg)
+update : Msg -> Model -> ( Model, Cmd Msg )
 update message recipes =
     case message of
         FetchSuccess newRecipes ->
-            (Model newRecipes.recipes (Nothing), Cmd.none)
+            ( Model newRecipes.recipes (Nothing), Cmd.none )
+
         FetchFailure error ->
-            (Model [] (Just (errorToString error)), Cmd.none)
+            ( Model [] (Just (errorToString error)), Cmd.none )
+
+        ToRecipe id ->
+            ( recipes, Navigation.modifyUrl (Routing.toHash (Routing.Recipe id)) )
+
+        CreateRecipe ->
+            ( recipes, Cmd.none )
 
 
+-- COMMANDS
 fetchAll : Cmd Msg
 fetchAll =
     Http.get recipesDecoder "http://localhost:3000/recipe/"
         |> Task.perform FetchFailure FetchSuccess
 
-type alias Recipes = { recipes : (List Recipe) }
-              
+
+type alias Recipes =
+    { recipes : List Recipe }
+
+
 recipesDecoder : Decode.Decoder Recipes
 recipesDecoder =
     Decode.object1 Recipes ("recipes" := recipeListDecoder)
-              
+
+
 recipeListDecoder : Decode.Decoder (List Recipe)
 recipeListDecoder =
     Decode.list recipeDecoder
-

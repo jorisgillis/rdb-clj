@@ -3,7 +3,7 @@
   (:use compojure.core)
   (:require [rdb.recipe :as r]
             [ring.middleware.json :refer [wrap-json-response wrap-json-body]]
-            [ring.util.response :refer [response not-found header]]
+            [ring.util.response :refer [response not-found header status]]
             [ring.middleware.params :refer [wrap-params]]
             [ring.middleware.keyword-params :refer [wrap-keyword-params]]
             [ring.middleware.cors :refer [wrap-cors]]
@@ -22,8 +22,7 @@
   (context "/recipe" []
            (GET "/" []
                 (->
-                 (response {:recipes (r/get-all-recipes)})
-                 ((fn [x] (println x) x))))
+                 (response {:recipes (r/get-all-recipes)})))
 
            (GET "/:id" [id]
                 (let [recipe (r/get-recipe id)]
@@ -34,12 +33,19 @@
            (POST "/" request
                  (->
                   (parse-request-body request)
-                  r/create-new-recipe))
+                  r/create-new-recipe
+                  response))
 
            (PUT "/" request
                 (->
                  (parse-request-body request)
-                 r/update-recipe)))
+                 r/update-recipe)
+                (status {:response "ok"} 200))
+
+           (DELETE "/:id" [id]
+                   (do
+                     (r/delete-recipe id)
+                     (response {:response "ok"}))))
 
   (route/resources "/")
   (route/not-found "Page not found"))

@@ -15,3 +15,7 @@ UPDATE recipe
    SET name = :name, 
        description = :description
  WHERE id = :id
+
+--name: delete-recipe!
+DELETE FROM recipe
+WHERE id = :id
