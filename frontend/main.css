@@ -12,3 +12,7 @@
 .grid-item--width2 {
     width: 600px;
 }
+
+.row {
+  padding-bottom: 7px;
+}

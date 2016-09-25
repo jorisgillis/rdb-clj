@@ -9,16 +9,16 @@ import Html.Events exposing (onClick)
 import Navigation
 import RecipeModel exposing (RecipeId, Recipe, recipeDecoder)
 import Routing
-import Util exposing (errorToString)
+import ErrorHandling exposing (errorToString, showError)
 
--- MESSAGES
+
 type Msg
     = FetchSuccess { recipes : List Recipe }
     | FetchFailure Http.Error
     | ToRecipe RecipeId
     | CreateRecipe
 
--- MODEL
+
 type alias Model =
     { recipes : List Recipe
     , error : Maybe String
@@ -30,7 +30,6 @@ initialModel =
     Model [] Nothing
 
 
--- VIEW
 view : Model -> Html Msg
 view model =
     div []
@@ -40,30 +39,11 @@ view model =
         ]
 
 
-showError : Maybe String -> Html Msg
-showError x =
-    case x of
-        Just error ->
-            div [ class "panel panel-danger" ]
-                [ div [ class "panel-heading" ]
-                    [ p [ class "panel-title" ]
-                        [ text "Error" ]
-                    ]
-                , div [ class "panel-body" ]
-                    [ p [] [ text error ]
-                    , p [] [ i [] [ text "Try again later. " ] ]
-                    ]
-                ]
-
-        Nothing ->
-            div [] []
-
-
 showCrud : Html Msg
 showCrud =
     div [ class "row crud" ]
-        [ div [ class "col-xs-2" ]
-            [ button
+        [ div [ class "col-sm-2" ]
+            [ div
                 [ href ""
                 , class "btn btn-sm btn-success"
                 , onClick CreateRecipe
@@ -96,7 +76,6 @@ recipeRow recipe =
             div [] []
 
 
--- UPDATE
 update : Msg -> Model -> ( Model, Cmd Msg )
 update message recipes =
     case message of
@@ -107,13 +86,19 @@ update message recipes =
             ( Model [] (Just (errorToString error)), Cmd.none )
 
         ToRecipe id ->
-            ( recipes, Navigation.modifyUrl (Routing.toHash (Routing.Recipe id)) )
+            Debug.log "TORECIPE"
+                ( recipes
+                , Navigation.newUrl
+                    (Routing.toHash (Routing.RecipeView id))
+                )
 
         CreateRecipe ->
-            ( recipes, Cmd.none )
+            Debug.log "CREATE"
+                ( recipes
+                , Navigation.newUrl (Routing.toHash Routing.RecipeCreate)
+                )
 
 
--- COMMANDS
 fetchAll : Cmd Msg
 fetchAll =
     Http.get recipesDecoder "http://localhost:3000/recipe/"

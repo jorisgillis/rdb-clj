@@ -28,3 +28,29 @@ recipeDecoder =
         ("id" := Decode.maybe Decode.int)
         ("name" := Decode.string)
         ("description" := Decode.string)
+
+
+type alias RecipeModel =
+    { recipe : Recipe
+    , error : Maybe String
+    }
+
+
+initialModel : RecipeModel
+initialModel =
+    RecipeModel newRecipe Nothing
+
+
+createNewModel : RecipeModel
+createNewModel =
+    RecipeModel newRecipe Nothing
+
+
+baseRecipeUrl : String
+baseRecipeUrl =
+    "http://localhost:3000/recipe/"
+
+
+recipeUrl : RecipeId -> String
+recipeUrl id =
+    baseRecipeUrl ++ (toString id)

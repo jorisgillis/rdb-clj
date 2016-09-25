@@ -40,7 +40,7 @@
                 (->
                  (parse-request-body request)
                  r/update-recipe)
-                (status {:response "ok"} 200))
+                (response {:response "ok"}))
 
            (DELETE "/:id" [id]
                    (do

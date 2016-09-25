@@ -1,5 +1,6 @@
 module App exposing (..)
 
+import Debug exposing (log)
 import Html exposing (Html, div, text, ul, li, p, a)
 import Html.App
 import Html.Attributes exposing (class)
@@ -10,49 +11,61 @@ import UrlParser exposing (Parser, (</>), format, int, oneOf, s, string)
 import Routing exposing (..)
 import RecipeList
 import RecipeView
-import RecipeModel exposing (RecipeId)
+import RecipeEdit
+import RecipeModel exposing (RecipeId, RecipeModel, newRecipe)
 
 
--- MODEL
 type alias Model =
     { recipes : RecipeList.Model
-    , recipe : RecipeView.Model
+    , recipe : RecipeModel
     , route : Page
     }
+
 
 init : Result String Page -> ( Model, Cmd Msg )
 init result =
     urlUpdate result initialModel
 
+
 initialModel : Model
 initialModel =
     { recipes = RecipeList.initialModel
-    , recipe = RecipeView.initialModel
+    , recipe = RecipeModel.initialModel
     , route = Home
     }
 
 
--- MESSAGES
 type Msg
     = RecipeListMsg RecipeList.Msg
     | RecipeViewMsg RecipeView.Msg
+    | RecipeEditMsg RecipeEdit.Msg
     | GoHome
 
 
--- VIEW
 view : Model -> Html Msg
 view model =
     div []
         [ showNavigation
         , div [ class "container" ]
-            [ case model.route of
-                Home ->
-                    (Html.App.map RecipeListMsg (RecipeList.view model.recipes))
-
-                Recipe _ ->
-                    (Html.App.map RecipeViewMsg (RecipeView.view model.recipe))
-            ]
+            [ loadPage model ]
         ]
+
+
+loadPage : Model -> Html Msg
+loadPage model =
+    case model.route of
+        Home ->
+            (Html.App.map RecipeListMsg (RecipeList.view model.recipes))
+
+        RecipeView _ ->
+            (Html.App.map RecipeViewMsg (RecipeView.view model.recipe))
+
+        RecipeEdit _ ->
+            (Html.App.map RecipeEditMsg (RecipeEdit.view model.recipe))
+
+        RecipeCreate ->
+            (Html.App.map RecipeEditMsg (RecipeEdit.view model.recipe))
+
 
 showNavigation : Html Msg
 showNavigation =
@@ -66,21 +79,9 @@ showNavigation =
         ]
 
 
-
-------------
--- UPDATE --
-------------
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        RecipeListMsg (RecipeList.CreateRecipe) ->
-            ( { model
-                | route = Recipe -1
-                , recipe = RecipeView.createNewModel
-              }
-            , Cmd.none
-            )
-
         RecipeListMsg subMsg ->
             let
                 ( newRecipes, cmd ) =
@@ -95,23 +96,39 @@ update msg model =
             in
                 ( { model | recipe = newRecipe }, Cmd.map RecipeViewMsg cmd )
 
+        RecipeEditMsg subMsg ->
+            let
+                ( newRecipe, cmd ) =
+                    RecipeEdit.update subMsg model.recipe
+            in
+                ( { model | recipe = newRecipe }, Cmd.map RecipeEditMsg cmd )
+
         GoHome ->
-            ( model, Navigation.modifyUrl (Routing.toHash Routing.Home) )
+            ( model, Navigation.newUrl (Routing.toHash Routing.Home) )
 
 
-
-----------------
--- URL UPDATE --
-----------------
 urlUpdate : Result String Page -> Model -> ( Model, Cmd Msg )
 urlUpdate result model =
     updatePage (Result.withDefault Home result) model
 
+
 updatePage : Page -> Model -> ( Model, Cmd Msg )
 updatePage page model =
-    ( { model | route = page }
+    ( { model
+        | route = page
+        , recipe = newRecipeOnCreate page model.recipe
+      }
     , updatePageMessage page
     )
+
+
+newRecipeOnCreate : Page -> RecipeModel -> RecipeModel
+newRecipeOnCreate page model =
+    if page == RecipeCreate then
+        { model | recipe = (newRecipe) }
+    else
+        model
+
 
 updatePageMessage : Page -> Cmd Msg
 updatePageMessage page =
@@ -119,15 +136,25 @@ updatePageMessage page =
         Home ->
             Cmd.map RecipeListMsg (RecipeList.fetchAll)
 
-        Recipe id ->
+        RecipeView id ->
             Cmd.map RecipeViewMsg (RecipeView.fetchRecipe id)
+
+        RecipeEdit id ->
+            Cmd.none
+
+        RecipeCreate ->
+            Cmd.none
+
 
 pageParser : Parser (Page -> a) a
 pageParser =
     oneOf
         [ format Home (s "")
-        , format Recipe (s "recipe" </> int)
+        , format RecipeEdit (s "recipe" </> s "edit" </> int)
+        , format RecipeCreate (s "createrecipe")
+        , format RecipeView (s "recipe" </> int)
         ]
+
 
 hashParser : Navigation.Location -> Result String Page
 hashParser location =
@@ -136,13 +163,11 @@ hashParser location =
         |> UrlParser.parse identity pageParser
 
 
--- SUBSCRIPTIONS
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.none
 
 
--- MAIN
 main : Program Never
 main =
     program
