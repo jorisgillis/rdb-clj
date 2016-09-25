@@ -49,6 +49,14 @@ type Msg
     | CreateSuccess RecipeId
 
 
+view : RecipeModel -> Html Msg
+view model =
+    div []
+        [ showError model.error
+        , showForm model.recipe
+        ]
+
+
 showForm : Recipe -> Html Msg
 showForm recipe =
     div [ class "row" ]
@@ -62,14 +70,6 @@ showForm recipe =
                     [ recipeForm recipe ]
                 ]
             ]
-        ]
-
-
-view : RecipeModel -> Html Msg
-view model =
-    div []
-        [ showError model.error
-        , recipeForm model.recipe
         ]
 
 
@@ -115,7 +115,7 @@ recipeForm recipe =
             [ class "row" ]
             [ div
                 [ class "col-sm-2" ]
-                [ button
+                [ div
                     [ href ""
                     , class "btn btn-sm btn-primary align-right"
                     , onClick PersistRecipe
@@ -124,7 +124,7 @@ recipeForm recipe =
                 ]
             , div
                 [ class "col-sm-2" ]
-                [ button
+                [ div
                     [ href ""
                     , class "btn btn-sm btn-primary"
                     , onClick Cancel
