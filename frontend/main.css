@@ -14,5 +14,9 @@
 }
 
 .row {
-  padding-bottom: 7px;
+    padding-bottom: 7px;
+}
+
+.align-right {
+    float: right
 }

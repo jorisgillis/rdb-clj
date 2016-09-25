@@ -1,6 +1,5 @@
 module App exposing (..)
 
-import Debug exposing (log)
 import Html exposing (Html, div, text, ul, li, p, a)
 import Html.App
 import Html.Attributes exposing (class)

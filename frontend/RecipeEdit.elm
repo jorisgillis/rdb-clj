@@ -1,8 +1,33 @@
 module RecipeEdit exposing (..)
 
 import Http
-import Html exposing (Html, div, p, h2, h5, text, form, input, textarea, button)
-import Html.Attributes exposing (class, type', value, name, href)
+import Html
+    exposing
+        ( Html
+        , div
+        , p
+        , h2
+        , h5
+        , text
+        , form
+        , input
+        , textarea
+        , button
+        , strong
+        )
+import Html.Attributes
+    exposing
+        ( class
+        , type'
+        , value
+        , name
+        , href
+        , cols
+        , rows
+        , size
+        , placeholder
+        , method
+        )
 import Html.Events exposing (onClick, onInput)
 import Task
 import Navigation exposing (modifyUrl)
@@ -55,13 +80,15 @@ recipeForm recipe =
             [ class "row" ]
             [ div
                 [ class "col-sm-2" ]
-                [ text "Name" ]
+                [ strong [] [ text "Name" ] ]
             , div
                 [ class "col-sm-10" ]
                 [ input
                     [ type' "text"
                     , value recipe.name
-                    , onInput (\name -> UpdateName name)
+                    , placeholder "Recipe name"
+                    , size 71
+                    , onInput UpdateName
                     ]
                     []
                 ]
@@ -70,12 +97,16 @@ recipeForm recipe =
             [ class "row" ]
             [ div
                 [ class "col-sm-2" ]
-                [ text "Description" ]
+                [ strong [] [ text "Description" ] ]
             , div
                 [ class "col-sm-10" ]
                 [ textarea
                     [ name "description"
-                    , onInput (\description -> UpdateDescription description)
+                    , placeholder "Description"
+                    , cols 70
+                    , rows 10
+                    , method "POST"
+                    , onInput UpdateDescription
                     ]
                     [ text recipe.description ]
                 ]
@@ -85,7 +116,8 @@ recipeForm recipe =
             [ div
                 [ class "col-sm-2" ]
                 [ button
-                    [ class "btn btn-sm btn-primary"
+                    [ href ""
+                    , class "btn btn-sm btn-primary align-right"
                     , onClick PersistRecipe
                     ]
                     [ text "Save" ]
@@ -93,7 +125,8 @@ recipeForm recipe =
             , div
                 [ class "col-sm-2" ]
                 [ button
-                    [ class "btn btn-sm btn-primary"
+                    [ href ""
+                    , class "btn btn-sm btn-primary"
                     , onClick Cancel
                     ]
                     [ text "Cancel" ]
@@ -134,27 +167,16 @@ update msg model =
                     ( model, createRecipe model.recipe )
 
         Cancel ->
-            let
-                cmd =
-                    case model.recipe.id of
-                        Just id ->
-                            Navigation.modifyUrl
-                                (Routing.toHash (Routing.RecipeView id))
-
-                        Nothing ->
-                            Navigation.modifyUrl
-                                (Routing.toHash (Routing.Home))
-            in
-                ( model, cmd )
+            ( model, toRecipeOrHome model.recipe )
 
         UpdateFailure error ->
             ( { model | error = (Just (errorToString error)) }, Cmd.none )
 
         UpdateSuccess ->
-            ( { model | error = Nothing }, Cmd.none )
+            ( { model | error = Nothing }, toRecipeOrHome model.recipe )
 
         CreateFailure error ->
-            ( { model | error = (Just (errorToString error)) }, Cmd.none )
+            ( { model | error = (Just (errorToString error)) }, toHome )
 
         CreateSuccess id ->
             let
@@ -164,7 +186,23 @@ update msg model =
                 newRecipe =
                     { recipe | id = Just id }
             in
-                ( { model | recipe = newRecipe, error = Nothing }, Cmd.none )
+                ( { model | recipe = newRecipe, error = Nothing }, toHome )
+
+
+toRecipeOrHome recipe =
+    case recipe.id of
+        Just id ->
+            Navigation.newUrl
+                (Routing.toHash (Routing.RecipeView id))
+
+        Nothing ->
+            Navigation.newUrl
+                (Routing.toHash (Routing.Home))
+
+
+toHome =
+    Navigation.newUrl
+        (Routing.toHash Routing.Home)
 
 
 idDecoder : Json.Decode.Decoder Int
