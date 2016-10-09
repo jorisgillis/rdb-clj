@@ -2,9 +2,9 @@ pom.xml
 pom.xml.asc
 *jar
 /lib/
-backend/classes/
-backend/target/
-backend/database.db
+classes/
+target/
+database.db
 /checkouts/
 .lein-deps-sum
 .lein-repl-history
@@ -12,6 +12,4 @@ backend/database.db
 .lein-failures
 .nrepl-port
 **/*~
-frontend/elm-stuff
-frontend/App.js
 .hgignore
