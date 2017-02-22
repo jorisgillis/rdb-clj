@@ -2,8 +2,9 @@
   :description "Recipes database"
   :url "http://example.com/FIXME"
   :license {:name "GNU GPL v3"
-            :url "http://gplv3.fsf.org/"}
+            :url  "http://gplv3.fsf.org/"}
   :dependencies [[org.clojure/clojure "1.8.0"]
+                 [org.clojure/tools.logging "0.3.1"]
                  [compojure "1.5.0"]
                  [ring "1.4.0"]
                  [ring/ring-json "0.4.0"]
@@ -15,7 +16,12 @@
                  [prismatic/schema "1.1.0"]
                  [peridot "0.4.3"]
                  [org.clojure/data.json "0.2.6"]
-                 [drift "1.5.3"]]
+                 [drift "1.5.3"]
+                 [com.cemerick/friend "0.2.3"]
+                 [com.cemerick/url "0.1.1"]
+                 [clojusc/friend-oauth2 "0.2.0"]
+                 [org.apache.httpcomponents/httpcore "4.4.5"]
+                 [org.apache.httpcomponents/httpclient "4.5.2"]]
   :plugins [[lein-ring "0.9.7"]
             [drift "1.5.3"]
             [lein-midje "3.2"]]
@@ -24,4 +30,7 @@
   :dev {:injections [(require 'schema.core) (schema.core/set-fn-validation! true)]}
   :main ^:skip-aot rdb.core
   :target-path "target/%s"
-  :profiles {:uberjar {:aot :all}})
+  :profiles {:uberjar {:aot :all}
+             :dev     {:jvm-opts ["-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8787"]}}
+  :aliases {"debug" ["with-profile" "dev" "ring" "server-headless"]
+            "serve" {"ring" "server-headless"}})
