@@ -8,7 +8,7 @@
 
 (facts "/recipe"
   (fact "GET without id returns list of all recipes"
-        (let [resp             (delay (peridot/request (peridot/session app) "/recipe"))
+        (let [resp             (delay (peridot/request (peridot/session unsecured-app) "/recipe"))
               recipe1          {:id 1 :name "recipe1" :description nil}
               recipe2          {:id 2 :name "recipe2" :description "Description"}
               expectedResponse (write-str {:recipes [recipe1 recipe2]})]
@@ -19,7 +19,7 @@
           (:body (:response @resp)) => expectedResponse))
   
   (fact "GET with id returns recipe with given id"
-        (let [resp     (delay (peridot/request (peridot/session app) "/recipe/1"))
+        (let [resp     (delay (peridot/request (peridot/session unsecured-app) "/recipe/1"))
               expected (write-str {:id 1 :name "Name" :description "Description"})]
           (:status (:response @resp)) => 200
           (provided
@@ -28,7 +28,7 @@
 
   (fact "POST creates new recipe and returns id"
         (let [resp (delay (->
-                           (peridot/session app)
+                           (peridot/session unsecured-app)
                            (peridot/content-type "application/json")
                            (peridot/request
                                "/recipe"
@@ -42,7 +42,7 @@
   (fact "PUT updates a given recipes"
         (let [body "{\"id\": 1, \"name\": \"Name\", \"description\": \"Description\"}"
               resp (delay (->
-                           (peridot/session app)
+                           (peridot/session unsecured-app)
                            (peridot/content-type "application/json")
                            (peridot/request
                             "/recipe"
