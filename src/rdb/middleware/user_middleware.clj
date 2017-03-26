@@ -4,7 +4,8 @@
             [cemerick.friend :as friend]
             [clj-http.client :as client]
             [clojure.data.json :refer [read-str]]
-            [clojure.walk :as walk]))
+            [clojure.walk :as walk]
+            [clojure.tools.logging :refer [info]]))
 
 (defn- google-user->user [user-info]
   {:name     (:given_name user-info)
@@ -31,6 +32,9 @@
     nil?
     not))
 
+(defn get-user-id [request]
+  (:id (:session request)))
+
 (defn- add-user-info-to-session [handler request]
   (let [token     (:current (friend/identity request))
         user-info (get-user-info token)
@@ -38,6 +42,7 @@
                     request
                     (assoc :session (merge (:session request) user-info))
                     handler)]
+    (info (str "Added user info into session, for user " (:name user-info)))
     (assoc response :session (merge (:session response) user-info))))
 
 (defn wrap-user-info-in-session [handler]
@@ -49,7 +54,9 @@
 (defn wrap-create-new-user [handler]
   (fn [request]
     (when (not (user-exists (get-in request [:session :name])))
-      (->
-        (select-keys (:session request) [:id :name :fullname :email])
-        (create-user! (use-connection))))
+      (do
+        (info (str "Creating user " (:name (:session request))))
+        (->
+          (select-keys (:session request) [:id :name :fullname :email])
+          (create-user! (use-connection)))))
     (handler request)))

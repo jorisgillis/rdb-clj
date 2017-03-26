@@ -21,9 +21,9 @@
 
 (defn create-new-recipe [recipe]
   (->>
-   (create-recipe<! recipe (use-connection))
-   get-id-from-db-response
-   (assoc {} :id)))
+    (create-recipe<! recipe (use-connection))
+    get-id-from-db-response
+    (assoc {} :id)))
 
 (defn update-recipe [recipe]
   (update-recipe<! recipe (use-connection)))

@@ -1,11 +1,13 @@
 --name: select-recipes
-SELECT *
-  FROM recipe
+SELECT r.*, u.name AS username
+  FROM recipe AS r
+  JOIN users AS u ON (r.userid=u.id)
 
 --name: select-recipe-by-id
-SELECT id, name, description
-  FROM recipe
- WHERE id = :id
+SELECT r.id, r.name, r.description, u.name AS username
+  FROM recipe AS r
+  JOIN users AS u ON (r.userid=u.id)
+ WHERE r.id = :id
 
 --name: create-recipe<!
 INSERT INTO recipe (name, description) VALUES (:name, :description)

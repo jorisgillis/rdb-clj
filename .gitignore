@@ -13,3 +13,7 @@ database.db
 .nrepl-port
 **/*~
 .hgignore
+.idea
+google-api-data.txt
+*.iml
+*.sh

@@ -2,7 +2,8 @@
   (:gen-class)
   (:use compojure.core)
   (:require [rdb.recipe :as r]
-            [rdb.middleware.user-middleware :refer [wrap-create-new-user wrap-user-info-in-session]]
+            [rdb.middleware.user-middleware :refer [wrap-create-new-user wrap-user-info-in-session get-user-id]]
+            [rdb.middleware.allowed-users :refer [wrap-allowed-users]]
             [ring.middleware.json :refer [wrap-json-response wrap-json-body]]
             [ring.util.response :refer [response not-found header status file-response resource-response]]
             [ring.middleware.params :refer [wrap-params]]
@@ -29,7 +30,14 @@
 
 (defroutes main-routes
            (GET "/" []
-             (file-response "/index.html"))
+             (file-response "index.html" {:root "resources/public"}))
+
+           (GET "/user/" request
+             (->
+               request
+               :session
+               (select-keys [:id :name :email])
+               response))
 
            (context "/recipe" []
              (GET "/" []
@@ -45,6 +53,7 @@
              (POST "/" request
                (->
                  (parse-request-body request)
+                 (assoc :userid (get-user-id request))
                  r/create-new-recipe
                  response))
 
@@ -112,6 +121,7 @@
 (def app
   (->
     main-routes
+    wrap-allowed-users
     wrap-create-new-user
     wrap-user-info-in-session
     (friend/authenticate auth-opts)
