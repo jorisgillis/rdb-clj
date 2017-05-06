@@ -6,5 +6,12 @@
    :subprotocol "sqlite"
    :subname     "database.db"})
 
-(defn use-connection []
-  {:connection db-spec})
+(defn use-connection
+  ([] {:connection db-spec})
+  ([connection] {:connection  connection
+                 :identifiers identity}))
+
+(defn with-db-transaction [f]
+  (jdbc/with-db-transaction
+    [connection db-spec]
+    (f connection)))
