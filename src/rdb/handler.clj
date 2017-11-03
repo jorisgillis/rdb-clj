@@ -29,77 +29,76 @@
     :body
     walk/keywordize-keys))
 
-(defroutes main-routes
-           (GET "/" []
-             (file-response "index.html" {:root "resources/public"}))
+(defroutes
+  main-routes
 
-           (GET "/user/" request
-             (->
-               request
-               :session
-               (select-keys [:id :name :email])
-               response))
+  (GET "/user/" request
+    (->
+      request
+      :session
+      (select-keys [:id :name :email])
+      response))
 
-           (context "/recipe" []
-             (GET "/" []
-               (->>
-                 (r/get-all-recipes)
-                 (map ingredient/include-ingredients)
-                 (assoc {} :recipes)
-                 response))
+  (context "/recipe" []
+    (GET "/" []
+      (->>
+        (r/get-all-recipes)
+        (map ingredient/include-ingredients)
+        (assoc {} :recipes)
+        response))
 
-             (GET "/:id" [id]
-               (let [recipe (r/get-recipe id)]
-                 (if-not (nil? recipe)
-                   (response (ingredient/include-ingredients recipe))
-                   (not-found recipe))))
+    (GET "/:id" [id]
+      (let [recipe (r/get-recipe id)]
+        (if-not (nil? recipe)
+          (response (ingredient/include-ingredients recipe))
+          (not-found recipe))))
 
-             (POST "/" request
-               (->
-                 (parse-request-body request)
-                 (assoc :userid (get-user-id request))
-                 r/create-new-recipe
-                 response))
+    (POST "/" request
+      (->
+        (parse-request-body request)
+        (assoc :userid (get-user-id request))
+        r/create-new-recipe
+        response))
 
-             (PUT "/" request
-               (->
-                 (parse-request-body request)
-                 r/update-recipe)
-               (response {:response "ok"}))
+    (PUT "/" request
+      (->
+        (parse-request-body request)
+        r/update-recipe)
+      (response {:response "ok"}))
 
-             (DELETE "/:id" [id]
-               (do
-                 (r/delete-recipe id)
-                 (response {:response "ok"}))))
+    (DELETE "/:id" [id]
+      (do
+        (r/delete-recipe id)
+        (response {:response "ok"}))))
 
-           (context "/ingredient" []
-             (GET "/" []
-               (response {:ingredients (ingredient/get-all-ingredients)}))
+  (context "/ingredient" []
+    (GET "/" []
+      (response {:ingredients (ingredient/get-all-ingredients)}))
 
-             (GET "/:id" [id]
-               (let [ingredient (ingredient/get-ingredient id)]
-                 (if (nil? ingredient)
-                   (not-found ingredient)
-                   (response ingredient))))
+    (GET "/:id" [id]
+      (let [ingredient (ingredient/get-ingredient id)]
+        (if (nil? ingredient)
+          (not-found (str "Ingredient with id " id " could not be found"))
+          (response ingredient))))
 
-             (POST "/" request
-               (let [id (ingredient/create-ingredient request)]
-                 (if (not (nil? id))
-                   (response {:id id})
-                   (status "Failed" 500))))
+    (POST "/" request
+      (let [id (ingredient/create-ingredient request)]
+        (if (not (nil? id))
+          (response {:id id})
+          (status "Failed" 500))))
 
-             (PUT "/:id" [id :as request]
-               (let [id (ingredient/update-ingredient id request)]
-                 (if (not (nil? id))
-                   (response {:id id})
-                   (status "Failed" 500))))
+    (PUT "/:id" [id :as request]
+      (let [id (ingredient/update-ingredient id request)]
+        (if (not (nil? id))
+          (response {:id id})
+          (status "Failed" 500))))
 
-             (DELETE "/:id" [id]
-               (ingredient/remove-ingredient id)
-               (response "")))
+    (DELETE "/:id" [id]
+      (ingredient/remove-ingredient id)
+      (response "")))
 
-           (route/resources "/")
-           (route/not-found "Page not found"))
+  (route/resources "/")
+  (route/not-found "Page not found"))
 
 (def callback-url "http://localhost:3000/authentication/callback")
 (def parsed-url (url/url callback-url))

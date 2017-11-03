@@ -9,4 +9,3 @@
     (fetch-user {:name name} (use-connection))
     count
     (= 1)))
-
