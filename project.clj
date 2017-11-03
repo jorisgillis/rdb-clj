@@ -35,5 +35,5 @@
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}
              :dev     {:jvm-opts ["-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8787"]}}
-  :aliases {"debug" ["with-profile" "dev" "ring" "server-headless"]
-            "serve" {"ring" "server-headless"}})
+  :aliases {"debug"  ["with-profile" "dev" "ring" "server-headless"]
+            "server" ["ring" "server-headless"]})

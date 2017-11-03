@@ -2,6 +2,7 @@
   (:gen-class)
   (:use compojure.core)
   (:require [rdb.recipe :as r]
+            [rdb.ingredient :as ingredient]
             [rdb.middleware.user-middleware :refer [wrap-create-new-user wrap-user-info-in-session get-user-id]]
             [rdb.middleware.allowed-users :refer [wrap-allowed-users]]
             [ring.middleware.json :refer [wrap-json-response wrap-json-body]]
@@ -41,13 +42,16 @@
 
            (context "/recipe" []
              (GET "/" []
-               (->
-                 (response {:recipes (r/get-all-recipes)})))
+               (->>
+                 (r/get-all-recipes)
+                 (map ingredient/include-ingredients)
+                 (assoc {} :recipes)
+                 response))
 
              (GET "/:id" [id]
                (let [recipe (r/get-recipe id)]
                  (if-not (nil? recipe)
-                   (response recipe)
+                   (response (ingredient/include-ingredients recipe))
                    (not-found recipe))))
 
              (POST "/" request
@@ -67,6 +71,32 @@
                (do
                  (r/delete-recipe id)
                  (response {:response "ok"}))))
+
+           (context "/ingredient" []
+             (GET "/" []
+               (response {:ingredients (ingredient/get-all-ingredients)}))
+
+             (GET "/:id" [id]
+               (let [ingredient (ingredient/get-ingredient id)]
+                 (if (nil? ingredient)
+                   (not-found ingredient)
+                   (response ingredient))))
+
+             (POST "/" request
+               (let [id (ingredient/create-ingredient request)]
+                 (if (not (nil? id))
+                   (response {:id id})
+                   (status "Failed" 500))))
+
+             (PUT "/:id" [id :as request]
+               (let [id (ingredient/update-ingredient id request)]
+                 (if (not (nil? id))
+                   (response {:id id})
+                   (status "Failed" 500))))
+
+             (DELETE "/:id" [id]
+               (ingredient/remove-ingredient id)
+               (response "")))
 
            (route/resources "/")
            (route/not-found "Page not found"))
